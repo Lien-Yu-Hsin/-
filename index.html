@@ -351,8 +351,8 @@ function renderDock(){
 }
 function renderBox(st){
   $('#boxTitle').textContent=S.name.h+' '+st.T.h.pts+' : '+st.T.a.pts+' '+S.name.a;
-  const tr=(name,s,tot)=>'<tr'+(tot?' class="tot"':'')+'><td>'+name+'</td><td>'+s.pts+'</td><td>'+s['2M']+'-'+s['2A']+'</td><td>'+s['3M']+'-'+s['3A']+'</td><td>'+s.FM+'-'+s.FA+'</td><td>'+pct(s['2M']+s['3M'],s['2A']+s['3A'])+'</td><td>'+(s.OR+s.DR)+' ('+s.OR+'/'+s.DR+')</td><td>'+s.AS+'</td><td>'+s.ST+'</td><td>'+s.BK+'</td><td>'+s.TV+'</td><td>'+s.PF+'</td><td class="'+(!tot&&s.pm>0?'pos':'')+'">'+(tot?'':(s.pm>0?'+':'')+s.pm)+'</td><td>'+eff(s)+'</td></tr>';
-  const head='<thead><tr><th>球員</th><th>得分</th><th>兩分</th><th>三分</th><th>罰球</th><th>投籃%</th><th>籃板(攻/守)</th><th>助攻</th><th>抄截</th><th>阻攻</th><th>失誤</th><th>犯規</th><th>+/-</th><th>效率</th></tr></thead>';
+  const tr=(name,s,tot)=>'<tr'+(tot?' class="tot"':'')+'><td>'+name+'</td><td>'+s.pts+'</td><td>'+s['2M']+'-'+s['2A']+'</td><td>'+s['3M']+'-'+s['3A']+'</td><td>'+s.FM+'-'+s.FA+'</td><td>'+pct(s['2M']+s['3M'],s['2A']+s['3A'])+'</td><td>'+pct(s['2M'],s['2A'])+'</td><td>'+pct(s['3M'],s['3A'])+'</td><td>'+pct(s.FM,s.FA)+'</td><td>'+(s.OR+s.DR)+' ('+s.OR+'/'+s.DR+')</td><td>'+s.AS+'</td><td>'+s.ST+'</td><td>'+s.BK+'</td><td>'+s.TV+'</td><td>'+s.PF+'</td><td class="'+(!tot&&s.pm>0?'pos':'')+'">'+(tot?'':(s.pm>0?'+':'')+s.pm)+'</td><td>'+eff(s)+'</td></tr>';
+  const head='<thead><tr><th>球員</th><th>得分</th><th>兩分</th><th>三分</th><th>罰球</th><th>投籃%</th><th>兩分%</th><th>三分%</th><th>罰球%</th><th>籃板(攻/守)</th><th>助攻</th><th>抄截</th><th>阻攻</th><th>失誤</th><th>犯規</th><th>+/-</th><th>效率</th></tr></thead>';
   $('#boxes').innerHTML=S.side.map(t=>'<h3><i class="dot '+t+'"></i>'+esc(S.name[t])+'</h3><div class="scroll"><table>'+head+'<tbody>'+
     team(t).map(p=>tr(esc(pn(p)),st.m[p.id])).join('')+tr('全隊',st.T[t],true)+'</tbody></table></div>').join('');
   const qn=Math.max(S.q,...Object.keys(st.qs).map(Number),1),qs=Array.from({length:qn},(_,i)=>st.qs[i+1]||{h:0,a:0});
@@ -411,8 +411,9 @@ function sheet(rows,widths,bold){
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>'+widths.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join('')+'</cols><sheetData>'+
     rows.map((r,ri)=>'<row r="'+(ri+1)+'">'+r.map((v,ci)=>{if(v===''||v==null)return'';const ref=colL(ci)+(ri+1),st=bold.has(ri)?' s="1"':'';return typeof v==='number'?'<c r="'+ref+'"'+st+'><v>'+v+'</v></c>':'<c r="'+ref+'" t="inlineStr"'+st+'><is><t xml:space="preserve">'+xe(v)+'</t></is></c>'}).join('')+'</row>').join('')+'</sheetData></worksheet>';
 }
-const HEAD=['隊伍','背號','姓名','得分','兩分進','兩分投','三分進','三分投','罰球進','罰球投','投籃%','進攻籃板','防守籃板','總籃板','助攻','抄截','阻攻','失誤','犯規','正負值','效率'];
-const statRow=(tn,num,name,s,tot)=>[tn,num,name,s.pts,s['2M'],s['2A'],s['3M'],s['3A'],s.FM,s.FA,(s['2A']+s['3A'])?Math.round((s['2M']+s['3M'])/(s['2A']+s['3A'])*1000)/10:'',s.OR,s.DR,s.OR+s.DR,s.AS,s.ST,s.BK,s.TV,s.PF,tot?'':s.pm,eff(s)];
+const HEAD=['隊伍','背號','姓名','得分','兩分進','兩分投','三分進','三分投','罰球進','罰球投','投籃%','兩分%','三分%','罰球%','進攻籃板','防守籃板','總籃板','助攻','抄截','阻攻','失誤','犯規','正負值','效率'];
+const pr=(m,a)=>a?Math.round(m/a*1000)/10:'';
+const statRow=(tn,num,name,s,tot)=>[tn,num,name,s.pts,s['2M'],s['2A'],s['3M'],s['3A'],s.FM,s.FA,pr(s['2M']+s['3M'],s['2A']+s['3A']),pr(s['2M'],s['2A']),pr(s['3M'],s['3A']),pr(s.FM,s.FA),s.OR,s.DR,s.OR+s.DR,s.AS,s.ST,s.BK,s.TV,s.PF,tot?'':s.pm,eff(s)];
 function buildXlsx(){
   const st=stats(),r1=[HEAD],b1=new Set([0]);
   S.side.forEach(t=>{team(t).forEach(p=>r1.push(statRow(S.name[t],p.num,p.name,st.m[p.id])));b1.add(r1.length);r1.push(statRow(S.name[t],'','全隊合計',st.T[t],true));r1.push([])});
@@ -427,7 +428,7 @@ function buildXlsx(){
     {name:'xl/workbook.xml',data:X+'<workbook xmlns="'+NS+'/spreadsheetml/2006/main" xmlns:r="'+NS+'/officeDocument/2006/relationships"><sheets>'+names.map((n,i)=>'<sheet name="'+n+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('')+'</sheets></workbook>'},
     {name:'xl/_rels/workbook.xml.rels',data:X+'<Relationships xmlns="'+NS+'/package/2006/relationships">'+names.map((_,i)=>'<Relationship Id="rId'+(i+1)+'" Type="'+NS+'/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')+'<Relationship Id="rId9" Type="'+NS+'/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'},
     {name:'xl/styles.xml',data:X+'<styleSheet xmlns="'+NS+'/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'},
-    {name:'xl/worksheets/sheet1.xml',data:sheet(r1,[12,6,12,...Array(18).fill(8)],b1)},
+    {name:'xl/worksheets/sheet1.xml',data:sheet(r1,[12,6,12,...Array(21).fill(8)],b1)},
     {name:'xl/worksheets/sheet2.xml',data:sheet(r2,[14,...Array(qn+1).fill(8)],new Set([0]))},
     {name:'xl/worksheets/sheet3.xml',data:sheet(r3,[6,6,9,12,10,6,10,16,16],new Set([0]))}
   ]);
@@ -435,9 +436,9 @@ function buildXlsx(){
 async function buildPdf(){
   try{await document.fonts.ready}catch(e){}
   const W=1684,H=1191,M=64,F="'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif",st=stats();
-  const cols=[['球員',250,'l'],['得分',80],['兩分',90],['三分',90],['罰球',90],['投籃%',90],['籃板',80],['攻板',72],['守板',72],['助攻',72],['抄截',72],['阻攻',72],['失誤',72],['犯規',72],['+/-',72],['效率',72]];
+  const cols=[['球員',220,'l'],['得分',80],['兩分',90],['三分',90],['罰球',90],['投籃%',84],['兩分%',84],['三分%',84],['罰球%',84],['籃板',80],['攻板',72],['守板',72],['助攻',72],['抄截',72],['阻攻',72],['失誤',72],['犯規',72],['+/-',72],['效率',72]];
   const sc=(W-2*M)/cols.reduce((a,c)=>a+c[1],0);cols.forEach(c=>c[1]*=sc);
-  const cells=s=>[s.pts,s['2M']+'-'+s['2A'],s['3M']+'-'+s['3A'],s.FM+'-'+s.FA,pct(s['2M']+s['3M'],s['2A']+s['3A']),s.OR+s.DR,s.OR,s.DR,s.AS,s.ST,s.BK,s.TV,s.PF];
+  const cells=s=>[s.pts,s['2M']+'-'+s['2A'],s['3M']+'-'+s['3A'],s.FM+'-'+s.FA,pct(s['2M']+s['3M'],s['2A']+s['3A']),pct(s['2M'],s['2A']),pct(s['3M'],s['3A']),pct(s.FM,s.FA),s.OR+s.DR,s.OR,s.DR,s.AS,s.ST,s.BK,s.TV,s.PF];
   const row=(vals,bold,bg)=>({h:42,draw(c,y){if(bg){c.fillStyle=bg;c.fillRect(M,y,W-2*M,42)}c.fillStyle='#111';c.font=(bold?'700 ':'400 ')+'22px '+F;let x=M;vals.forEach((v,i)=>{const[ ,w,al]=cols[i]||['',90];c.textAlign=al==='l'?'left':'right';c.fillText(String(v),al==='l'?x+10:x+w-10,y+29);x+=w});c.strokeStyle='#ddd';c.beginPath();c.moveTo(M,y+42);c.lineTo(W-M,y+42);c.stroke()}});
   const items=[{h:120,draw(c,y){c.fillStyle='#111';c.textAlign='left';c.font='700 46px '+F;c.fillText(S.name.h+'  '+st.T.h.pts+' : '+st.T.a.pts+'  '+S.name.a,M,y+56);c.font='400 22px '+F;c.fillStyle='#555';c.fillText('籃球比賽數據　'+new Date().toLocaleDateString('zh-TW'),M,y+96)}}];
   const qn=Math.max(S.q,...Object.keys(st.qs).map(Number),1),qa=Array.from({length:qn},(_,i)=>st.qs[i+1]||{h:0,a:0});
@@ -490,7 +491,7 @@ const CMD={
   undo(){const e=S.log.pop();if(!e){toast('沒有可復原的紀錄');return}follow=null;subAsk=null;save();toast('已復原：'+who(e.p,e.tm)+' '+L[e.t]);render()},
   cleardemo(b){twoTap(b,()=>{S=fresh({});follow=subAsk=null;save();switchTab('set');toast('先新增兩隊名單')})},
   copySum(){const st=stats();copy(S.name.h+' '+st.T.h.pts+' : '+st.T.a.pts+' '+S.name.a+'\n'+['h','a'].map(t=>'【'+S.name[t]+'】\n'+team(t).map(p=>st.m[p.id]).filter(s=>s.pts||s.OR||s.DR||s.AS||s.ST||s.BK||s.TV||s.PF||s['2A']||s['3A']||s.FA).map(s=>pn(s.p)+'　'+s.pts+'分 '+(s.OR+s.DR)+'板 '+s.AS+'助 '+s.ST+'抄 '+s.BK+'阻'+(s.TV?' '+s.TV+'失誤':'')+'（投 '+(s['2M']+s['3M'])+'/'+(s['2A']+s['3A'])+'、三分 '+s['3M']+'/'+s['3A']+'、罰 '+s.FM+'/'+s.FA+'）').join('\n')).join('\n\n'),'戰報')},
-  copyBox(){const st=stats();copy(csv([['隊伍','背號','姓名','得分','兩分進','兩分投','三分進','三分投','罰進','罰投','進攻籃板','防守籃板','助攻','抄截','阻攻','失誤','犯規','正負值','效率'],...['h','a'].flatMap(t=>team(t).map(p=>{const s=st.m[p.id];return[S.name[t],p.num,p.name,s.pts,s['2M'],s['2A'],s['3M'],s['3A'],s.FM,s.FA,s.OR,s.DR,s.AS,s.ST,s.BK,s.TV,s.PF,s.pm,eff(s)]}))]),'數據 CSV')},
+  copyBox(){const st=stats();copy(csv([['隊伍','背號','姓名','得分','兩分進','兩分投','三分進','三分投','罰進','罰投','兩分%','三分%','罰球%','進攻籃板','防守籃板','助攻','抄截','阻攻','失誤','犯規','正負值','效率'],...['h','a'].flatMap(t=>team(t).map(p=>{const s=st.m[p.id];return[S.name[t],p.num,p.name,s.pts,s['2M'],s['2A'],s['3M'],s['3A'],s.FM,s.FA,pr(s['2M'],s['2A']),pr(s['3M'],s['3A']),pr(s.FM,s.FA),s.OR,s.DR,s.AS,s.ST,s.BK,s.TV,s.PF,s.pm,eff(s)]}))]),'數據 CSV')},
   copyPbp(){copy(csv([['序號','節次','剩餘時間','隊伍','事件代碼','事件','背號','姓名','我方場上','對手場上'],...S.log.map(e=>{const p=P(e.p);return[e.id,qShort(e.q),fmt(e.c),S.name[e.tm],e.t,L[e.t],p?p.num:'',p?p.name:'',(e.on?.h||[]).map(id=>P(id)?.num).join(' '),(e.on?.a||[]).map(id=>P(id)?.num).join(' ')]})]),'逐筆 CSV')},
   saveSet(){S.name.h=$('#sHome').value.trim()||'我們';S.name.a=$('#sAway').value.trim()||'對手';const ql=+$('#sQlen').value;if(ql!==S.qlen&&S.q<=4&&!S.log.some(e=>e.q===S.q)&&!S.running)S.clock=ql;S.qlen=ql;S.pfMax=+$('#sPf').value;S.tfPen=+$('#sTf').value;
     const m=$('#sClk').value.trim().match(/^(\d{1,2})(?::(\d{1,2}))?$/);if(m){S.clock=(+m[1])*60+(+(m[2]||0));S.running=false}
